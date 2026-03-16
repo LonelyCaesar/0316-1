@@ -1,90 +1,92 @@
-# Working Days Calculator
+# 智慧倉儲系統（warehouse-system）
 
-這個專案提供一個 Python 函式 `get_working_days`，用來計算兩個日期（含起訖日）之間的工作日總天數（週一到週五），並可自動扣除指定假日。
+本專案目錄：`/workspace/0316-1`。
 
-另外也新增了兩支可直接執行的 Python 測試腳本，用來驗證私人網站常見架構：
-- 前端 Vue.js
-- 後端 Node.js
+系統分成三塊：
+- 後端 API：`warehouse-system/backend`（Node.js + TypeScript）
+- 前端畫面：`warehouse-system/frontend`（Vue 3 + TypeScript）
+- Python 補貨計算：`warehouse-system/python/reorder_advisor.py`
 
-## 函式簽名
+預設網址：
+- 前端：`http://localhost:5004`
+- 後端：`http://localhost:3004`
 
-```python
-def get_working_days(start_date: date, end_date: date, holidays: Optional[List[date]] = None) -> int
-```
+## 1. 直接啟動（照順序）
 
-## 功能說明
-
-- 檢查日期區間是否合法：若 `start_date > end_date`，會拋出 `ValueError`。
-- 使用 `while` 迴圈與 `timedelta(days=1)` 逐日遞增。
-- 以 `weekday() < 5` 判斷是否為平日（週一至週五）。
-- 若有提供 `holidays`，會先轉成 `set`，讓假日查詢維持 O(1) 平均時間複雜度。
-
-## 使用範例
-
-```python
-from datetime import date
-from working_days import get_working_days
-
-start = date(2023, 10, 1)
-end = date(2023, 10, 10)
-holidays = [date(2023, 10, 9), date(2023, 10, 10)]
-
-print(get_working_days(start, end, holidays))
-# 預期輸出: 5
-```
-
-## 直接執行測試
+### 終端機 A：啟動後端
+> 先切到 repo 根目錄再執行
 
 ```bash
-python3 working_days.py
+cd /workspace/0316-1
+cd warehouse-system/backend
+npm install
+npm run dev
 ```
 
-預期輸出：
+成功訊息應包含：`Warehouse API running at http://localhost:3004`
 
-```text
-Working days from 2023-10-01 to 2023-10-10: 5
-```
-
----
-
-## 私人網站測試腳本（Python）
-
-### 安裝依賴
-
-不需要額外第三方套件（使用 Python 標準函式庫 `urllib`）。
-
-### 1) Vue.js 前端 Smoke Test
-
-檔案：`scripts/test_frontend_vue.py`
-
-範例：
+### 終端機 B：啟動前端
 
 ```bash
-python3 scripts/test_frontend_vue.py \
-  --url http://localhost:5173 \
-  --mount-selector 'id="app"' \
-  --expect-text '歡迎'
+cd /workspace/0316-1
+cd warehouse-system/frontend
+npm install
+npm run dev
 ```
 
-預設會檢查：
-- 頁面可連線且回應 2xx
-- HTML 中是否包含 Vue 掛載點（預設 `id="app"`）
-- （可選）是否包含指定文字
+瀏覽器開：`http://localhost:5004`
 
-### 2) Node.js 後端 Smoke Test
+## 2. 常見問題（對應你圖中的狀況）
 
-檔案：`scripts/test_backend_node.py`
+### Q1: 畫面有資料，但「Ollama 補貨建議」顯示 `Ollama request failed with status 404`
+代表前端與後端已正常，但後端打到的 Ollama API 路徑/服務不對。
 
-範例：
+處理方式：
+1. 先啟動 Ollama：
+   ```bash
+   ollama serve
+   ```
+2. 確認後端環境變數（在啟動 backend 的同一個終端機）：
+   ```bash
+   export OLLAMA_BASE_URL=http://localhost:11434
+   export OLLAMA_MODEL=llama3.1
+   npm run dev
+   ```
+
+### Q2: 前端一直載入中或沒資料
+1. 檢查後端是否真的在 `http://localhost:3004`。
+2. 檢查前端是否開在 `http://localhost:5004`（不是 5173）。
+3. 如需手動指定 API：
+   ```bash
+   cd /workspace/0316-1/warehouse-system/frontend
+   VITE_API_BASE=http://localhost:3004 npm run dev
+   ```
+
+## 3. API 一覽（後端）
+
+- `GET /api/health`
+- `GET /api/inventory`
+- `POST /api/inventory/adjust`
+- `GET /api/inventory/low-stock`
+- `GET /api/ai/summary`
+
+## 4. Python 補貨計算
 
 ```bash
-python3 scripts/test_backend_node.py \
-  --base-url http://localhost:3000 \
-  --health-path /api/health \
-  --expect-status ok
+cd /workspace/0316-1
+python3 warehouse-system/python/reorder_advisor.py
 ```
 
-預設會檢查：
-- Health API 可連線且回應 2xx
-- 回應為 JSON
-- JSON 中 `status` 欄位符合預期值（預設 `ok`）
+## 5. 測試指令
+
+### 後端測試
+```bash
+cd /workspace/0316-1/warehouse-system/backend
+npm test
+```
+
+### Python 語法檢查
+```bash
+cd /workspace/0316-1
+python3 -m py_compile warehouse-system/python/reorder_advisor.py
+```

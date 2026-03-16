@@ -1,3 +1,4 @@
+cat << 'EOF' > README.md
 # Warehouse System Demo (Python + Vue 3 + TypeScript + Node.js + Ollama)
 
 這個 repo 新增了一個可快速啟動的「智慧倉儲系統」範例，包含：
@@ -65,7 +66,6 @@ VITE_API_BASE=http://localhost:3004 npm run dev
 
 ---
 
-
 ## 常見操作（對應你看到的畫面）
 
 如果頁面停在「載入中…」或顯示「尚未載入」，通常是前端連不到後端或 Ollama。
@@ -92,7 +92,6 @@ VITE_API_BASE=http://localhost:3004 npm run dev
    ```
 
 ---
-
 
 ## PR 衝突處理（不能點 Resolve conflicts 時）
 
@@ -136,3 +135,4 @@ Python smoke test：
 ```bash
 python3 warehouse-system/python/reorder_advisor.py
 ```
+EOF

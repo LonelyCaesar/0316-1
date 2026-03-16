@@ -17,6 +17,7 @@ const items = ref<Item[]>([]);
 const aiSummary = ref("尚未載入");
 const loading = ref(false);
 const errorMessage = ref("");
+const backendHealthy = ref<boolean | null>(null);
 
 const hasItems = computed(() => items.value.length > 0);
 
@@ -25,6 +26,9 @@ const loadDashboard = async () => {
   errorMessage.value = "";
 
   try {
+    const healthResponse = await fetch(`${apiBase}/api/health`);
+    backendHealthy.value = healthResponse.ok;
+
     const inventoryResponse = await fetch(`${apiBase}/api/inventory`);
     if (!inventoryResponse.ok) {
       throw new Error(`庫存 API 連線失敗（HTTP ${inventoryResponse.status}）`);
@@ -46,6 +50,7 @@ const loadDashboard = async () => {
     const message = error instanceof Error ? error.message : "載入失敗";
     errorMessage.value = `${message}。請確認後端是否啟動於 ${apiBase}`;
     aiSummary.value = "尚未載入";
+    backendHealthy.value = false;
   } finally {
     loading.value = false;
   }
@@ -58,6 +63,13 @@ onMounted(loadDashboard);
   <main>
     <h1>智慧倉儲管理系統</h1>
     <button @click="loadDashboard">重新整理</button>
+    <p class="status" :class="{ ok: backendHealthy, bad: backendHealthy === false }">
+      後端狀態：
+      <span v-if="backendHealthy === null">檢查中</span>
+      <span v-else-if="backendHealthy">正常</span>
+      <span v-else>異常</span>
+    </p>
+
     <p v-if="loading">載入中...</p>
     <p v-if="errorMessage" class="error">{{ errorMessage }}</p>
     <p v-if="!loading && !hasItems" class="hint">尚未取得庫存資料，請依下方操作步驟啟動後端。</p>
@@ -93,6 +105,15 @@ h1 {
 button {
   margin: 10px 0;
   padding: 8px 12px;
+}
+.status {
+  font-weight: 600;
+}
+.ok {
+  color: #0f7a33;
+}
+.bad {
+  color: #b00020;
 }
 .error {
   color: #b00020;

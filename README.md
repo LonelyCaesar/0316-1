@@ -11,6 +11,16 @@
 - 前端：`http://localhost:5004`
 - 後端：`http://localhost:3004`
 
+
+## 0. 衝突檔案已統一版本
+
+本次 PR 若看到 3 個衝突檔，請以目前分支內容為準：
+- `README.md`：本文件（以絕對路徑指令為準）
+- `warehouse-system/backend/src/server.ts`：預設後端埠號 `3004`
+- `warehouse-system/frontend/src/App.vue`：快速操作改為絕對路徑，並含 404 排錯
+
+---
+
 ## 1. 直接啟動（照順序）
 
 ### 終端機 A：啟動後端

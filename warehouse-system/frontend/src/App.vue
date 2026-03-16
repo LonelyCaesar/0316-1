@@ -72,10 +72,10 @@ onMounted(loadDashboard);
     <section class="ops-box">
       <h2>快速操作</h2>
       <ol>
-        <li>先啟動後端 API：`cd warehouse-system/backend && npm run dev`（預設 3004）。</li>
-        <li>再啟動前端：`cd warehouse-system/frontend && npm run dev`（預設 5004）。</li>
-        <li>若畫面無資料，按「重新整理」，並確認 `VITE_API_BASE` 指向後端。</li>
-        <li>若 Ollama 建議為空，請先啟動 Ollama 並確認 `OLLAMA_BASE_URL`。</li>
+        <li>先啟動後端 API：`cd /workspace/0316-1/warehouse-system/backend && npm run dev`（預設 3004）。</li>
+        <li>再啟動前端：`cd /workspace/0316-1/warehouse-system/frontend && npm run dev`（預設 5004）。</li>
+        <li>若畫面無資料，按「重新整理」，並確認 `VITE_API_BASE` 指向 `http://localhost:3004`。</li>
+        <li>若顯示 `Ollama request failed with status 404`，請先啟動 `ollama serve` 並確認 `OLLAMA_BASE_URL`。</li>
       </ol>
     </section>
   </main>

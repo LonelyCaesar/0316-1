@@ -65,6 +65,34 @@ VITE_API_BASE=http://localhost:3004 npm run dev
 
 ---
 
+
+## 常見操作（對應你看到的畫面）
+
+如果頁面停在「載入中…」或顯示「尚未載入」，通常是前端連不到後端或 Ollama。
+
+1. 開兩個終端機。
+2. 終端機 A 啟動後端：
+   ```bash
+   cd warehouse-system/backend
+   npm install
+   npm run dev
+   ```
+   看到 `Warehouse API running at http://localhost:3004` 代表成功。
+3. 終端機 B 啟動前端：
+   ```bash
+   cd warehouse-system/frontend
+   npm install
+   npm run dev
+   ```
+   瀏覽器開 `http://localhost:5004`。
+4. 如果你是開在 `http://localhost:5173`，請改成 `5004`，或重啟前端後以終端顯示網址為準。
+5. 若只想先看庫存，不需 Ollama；若要 AI 建議，另開 Ollama：
+   ```bash
+   ollama serve
+   ```
+
+---
+
 ## 3) Python 補貨邏輯
 
 ```bash

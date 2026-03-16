@@ -93,6 +93,25 @@ VITE_API_BASE=http://localhost:3004 npm run dev
 
 ---
 
+
+## PR 衝突處理（不能點 Resolve conflicts 時）
+
+如果 PR 頁面顯示 `This branch has conflicts that must be resolved`，但你無法在 GitHub 直接點 `Resolve conflicts`，請改用本機 Git：
+
+```bash
+git fetch origin
+git checkout <your-pr-branch>
+git merge origin/<target-branch>
+# 手動修改衝突檔（刪除 <<<<<<<、=======、>>>>>>>）
+git add .
+git commit -m "resolve merge conflicts"
+git push origin <your-pr-branch>
+```
+
+完成後回到 PR 頁面，`Merge pull request` 通常就會恢復可點擊。
+
+---
+
 ## 3) Python 補貨邏輯
 
 ```bash

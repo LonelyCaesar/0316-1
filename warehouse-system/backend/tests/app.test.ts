@@ -23,4 +23,13 @@ describe("warehouse api", () => {
     expect(response.status).toBe(200);
     expect(response.body.item.quantity).toBeGreaterThanOrEqual(0);
   });
+
+  it("returns local inventory summary", async () => {
+    const app = createApp();
+    const response = await request(app).get("/api/ai/summary");
+
+    expect(response.status).toBe(200);
+    expect(typeof response.body.summary).toBe("string");
+    expect(response.body.summary.length).toBeGreaterThan(0);
+  });
 });

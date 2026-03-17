@@ -13,8 +13,3 @@ export interface InventoryAdjustment {
   delta: number;
   reason: string;
 }
-
-export interface OllamaMessage {
-  role: "system" | "user" | "assistant";
-  content: string;
-}

@@ -40,7 +40,7 @@ const loadDashboard = async () => {
     const aiResponse = await fetch(`${apiBase}/api/ai/summary`);
     if (!aiResponse.ok) {
       const aiErrorData = (await aiResponse.json().catch(() => ({}))) as { error?: string };
-      aiSummary.value = aiErrorData.error || "AI 建議暫時無法取得，請先確認 Ollama 是否啟動。";
+      aiSummary.value = aiErrorData.error || "系統建議暫時無法取得。";
       return;
     }
 
@@ -77,7 +77,7 @@ onMounted(loadDashboard);
     <InventoryTable :items="items" />
 
     <section class="ai-box">
-      <h2>Ollama 補貨建議</h2>
+      <h2>補貨建議</h2>
       <p>{{ aiSummary }}</p>
     </section>
 
@@ -87,7 +87,6 @@ onMounted(loadDashboard);
         <li>先啟動後端 API：`cd warehouse-system/backend && npm run dev`（預設 3004）。</li>
         <li>再啟動前端：`cd warehouse-system/frontend && npm run dev`（預設 5004）。</li>
         <li>若畫面無資料，按「重新整理」，並確認 `VITE_API_BASE` 指向後端。</li>
-        <li>若 Ollama 建議為空，請先啟動 Ollama 並確認 `OLLAMA_BASE_URL`。</li>
       </ol>
     </section>
   </main>

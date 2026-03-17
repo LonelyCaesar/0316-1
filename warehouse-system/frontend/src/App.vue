@@ -22,7 +22,7 @@ const suggestions = ref<Suggestion[]>([]);
 
 const form = ref({ name: '', sku: '', quantity: 0, reorderPoint: 0, location: '' });
 
-const lowStockCount = computed(() => inventory.value.filter((item) => item.quantity <= item.reorderPoint).length);
+const lowStockCount = computed(() => inventory.value.filter((item) => item.quantity < item.reorderPoint).length);
 
 async function refresh() {
   const [inventoryResponse, summaryResponse] = await Promise.all([
@@ -101,7 +101,7 @@ onMounted(refresh);
           <tr><th>名稱</th><th>SKU</th><th>庫存</th><th>安全庫存</th><th>儲位</th><th>操作</th></tr>
         </thead>
         <tbody>
-          <tr v-for="item in inventory" :key="item.id" :class="{ danger: item.quantity <= item.reorderPoint }">
+          <tr v-for="item in inventory" :key="item.id" :class="{ danger: item.quantity < item.reorderPoint }">
             <td>{{ item.name }}</td>
             <td>{{ item.sku }}</td>
             <td>{{ item.quantity }}</td>

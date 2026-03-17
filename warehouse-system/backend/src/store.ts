@@ -38,6 +38,15 @@ export const adjustInventory = ({ itemId, delta }: AdjustmentPayload) => {
   return target;
 };
 
+export const deleteItem = (id: string) => {
+  const index = inventory.findIndex((item) => item.id === id);
+  if (index === -1) {
+    return null;
+  }
+  const [removed] = inventory.splice(index, 1);
+  return removed;
+};
+
 export const getLowStock = () => inventory.filter((item) => item.quantity <= item.reorderPoint);
 
 export const buildSummary = () => {

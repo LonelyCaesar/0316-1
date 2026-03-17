@@ -187,6 +187,15 @@ onMounted(loadDashboard);
         一鍵補齊低庫存（{{ lowStockItems.length }} 項）
       </button>
     </section>
+
+    <section class="ops-box">
+      <h2>快速操作</h2>
+      <ol>
+        <li>先啟動後端 API：`cd warehouse-system/backend && npm run dev`（預設 3004）。</li>
+        <li>再啟動前端：`cd warehouse-system/frontend && npm run dev`（預設 5004）。</li>
+        <li>若畫面無資料，按「重新整理」，並確認 `VITE_API_BASE` 指向後端。</li>
+      </ol>
+    </section>
   </main>
 </template>
 
@@ -219,12 +228,14 @@ button {
   color: #555;
 }
 .ops-box,
+
 .ai-box {
   margin-top: 20px;
   padding: 12px;
   background: #eef6ff;
   border-radius: 8px;
 }
+
 .form-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -233,4 +244,5 @@ button {
 .form-grid input {
   padding: 8px;
 }
+
 </style>

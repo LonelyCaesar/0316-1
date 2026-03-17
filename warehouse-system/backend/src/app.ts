@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
 import { addItem, adjustInventory, listItems, lowStockItems } from "./inventoryStore.js";
+import { adjustInventory, listItems, lowStockItems } from "./inventoryStore.js";
 import { generateInventorySummary } from "./inventoryAdvisor.js";
 
 export const createApp = () => {

@@ -42,19 +42,18 @@ npm install
 npm run dev
 ```
 
-### macOS / Linux（Terminal）
-
-```bash
-cd <你的專案路徑>/warehouse-system/backend
-npm install
-npm run dev
-```
-
 啟動成功後可測試：
 
 - `http://localhost:3004/api/health`
 
 ---
+啟動成功後可測試：
+
+- `http://localhost:3004/api/health`
+
+---
+- `PORT`（預設 `3004`）
+- `HOST`（預設 `0.0.0.0`）
 
 ## 2) 終端機 B：啟動前端
 
@@ -68,6 +67,12 @@ npm run dev
 ```
 
 ### Windows CMD
+
+```cmd
+cd <你的專案路徑>\warehouse-system\frontend
+npm install
+set VITE_API_BASE=http://localhost:3004&& npm run dev
+```
 
 ```cmd
 cd <你的專案路徑>\warehouse-system\frontend
@@ -122,6 +127,77 @@ curl -X POST http://localhost:3004/api/inventory \
   -H "Content-Type: application/json" \
   -d '{"name":"防塵口罩","sku":"MSK-004","quantity":30,"reorderPoint":20,"location":"D-01"}'
 ```
+
+Windows PowerShell 範例：
+
+```powershell
+Invoke-RestMethod -Method Post -Uri "http://localhost:3004/api/inventory" -ContentType "application/json" -Body '{"name":"防塵口罩","sku":"MSK-004","quantity":30,"reorderPoint":20,"location":"D-01"}'
+```
+
+啟動後打開：
+
+- `http://localhost:5004`
+
+---
+
+## 進出貨與新增商品（重點）
+
+### A. 賣出商品（扣庫存）
+
+使用 `POST /api/inventory/adjust`，`delta` 填負數：
+
+```bash
+curl -X POST http://localhost:3004/api/inventory/adjust \
+  -H "Content-Type: application/json" \
+  -d '{"itemId":"1","delta":-5,"reason":"出貨"}'
+```
+
+### B. 新增一個新商品（新 SKU）
+
+使用 `POST /api/inventory`：
+
+```bash
+curl -X POST http://localhost:3004/api/inventory \
+  -H "Content-Type: application/json" \
+  -d '{"name":"防塵口罩","sku":"MSK-004","quantity":30,"reorderPoint":20,"location":"D-01"}'
+```
+
+## 主要 API
+
+- `GET /api/health`
+- `GET /api/inventory`
+- `POST /api/inventory/adjust`
+- `GET /api/inventory/low-stock`
+- `GET /api/ai/summary`
+
+可用環境變數覆蓋（後端）：
+
+- `PORT`（預設 `3004`）
+- `HOST`（預設 `0.0.0.0`）
+
+---
+
+## 常見排查
+
+1. **前端顯示無資料 / Failed to fetch**
+   - 先檢查終端機 A 是否還在跑 `npm run dev`。
+   - 確認 `http://localhost:3004/api/health` 打得開。
+
+2. **Windows 出現 `ENOENT ... package.json`**
+   - 代表你在錯誤目錄（常見：`C:\WINDOWS\System32`）執行 npm。
+   - 請先 `cd` 到正確資料夾：
+     - 後端：`...\warehouse-system\backend`
+     - 前端：`...\warehouse-system\frontend`
+
+3. **PowerShell 顯示 `'VITE_API_BASE=...' is not recognized`**
+   - 你用了 bash 語法。
+   - PowerShell 請改用：
+     - `$env:VITE_API_BASE="http://localhost:3004"`
+     - 然後再 `npm run dev`
+
+---
+1. 確認後端已啟動且可開啟 `http://localhost:3004/api/health`。
+2. 確認前端啟動網址為 `http://localhost:5004`。
 
 Windows PowerShell 範例：
 

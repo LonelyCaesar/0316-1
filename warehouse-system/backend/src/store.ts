@@ -47,7 +47,7 @@ export const deleteItem = (id: string) => {
   return removed;
 };
 
-export const getLowStock = () => inventory.filter((item) => item.quantity <= item.reorderPoint);
+export const getLowStock = () => inventory.filter((item) => item.quantity < item.reorderPoint);
 
 export const buildSummary = () => {
   const lowStock = getLowStock();

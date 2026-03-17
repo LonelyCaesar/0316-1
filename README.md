@@ -55,6 +55,8 @@ npm run dev
 - `http://localhost:3004/api/health`
 
 ---
+- `PORT`（預設 `3004`）
+- `HOST`（預設 `0.0.0.0`）
 
 ## 2) 終端機 B：啟動前端
 
@@ -123,6 +125,8 @@ VITE_API_BASE=http://localhost:3004 npm run dev
      - 然後再 `npm run dev`
 
 ---
+1. 確認後端已啟動且可開啟 `http://localhost:3004/api/health`。
+2. 確認前端啟動網址為 `http://localhost:5004`。
 
 ## 3) Python 補貨邏輯
 

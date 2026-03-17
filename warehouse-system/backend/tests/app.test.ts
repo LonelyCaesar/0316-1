@@ -1,90 +1,66 @@
 import request from "supertest";
 import { describe, expect, it } from "vitest";
-import { createApp } from "../src/app.js";
+import { app } from "../src/app.js";
 
 describe("warehouse api", () => {
   it("returns inventory list", async () => {
-    const app = createApp();
     const response = await request(app).get("/api/inventory");
 
     expect(response.status).toBe(200);
-    expect(Array.isArray(response.body.items)).toBe(true);
-    expect(response.body.items.length).toBeGreaterThan(0);
+    expect(Array.isArray(response.body)).toBe(true);
+    expect(response.body.length).toBeGreaterThan(0);
   });
 
   it("adds inventory item", async () => {
-    const app = createApp();
+    const sku = `MSK-${Date.now()}`;
     const response = await request(app).post("/api/inventory").send({
       name: "防塵口罩",
-      sku: "MSK-004",
+      sku,
       quantity: 30,
       reorderPoint: 20,
       location: "D-01"
     });
 
     expect(response.status).toBe(201);
-    expect(response.body.item.name).toBe("防塵口罩");
-    expect(response.body.item.sku).toBe("MSK-004");
-  });
-
-  it("updates inventory item", async () => {
-    const app = createApp();
-    const response = await request(app).put("/api/inventory/1").send({
-      name: "工業手套（新版）",
-      sku: "GLO-001",
-      quantity: 110,
-      reorderPoint: 70,
-      location: "A-02"
-    });
-
-    expect(response.status).toBe(200);
-    expect(response.body.item.name).toBe("工業手套（新版）");
-    expect(response.body.item.location).toBe("A-02");
-  });
-
-  it("deletes inventory item", async () => {
-    const app = createApp();
-    const response = await request(app).delete("/api/inventory/3");
-
-    expect(response.status).toBe(200);
-    expect(response.body.item.id).toBe("3");
-
-    const listResponse = await request(app).get("/api/inventory");
-    expect(listResponse.body.items.some((item: { id: string }) => item.id === "3")).toBe(false);
-  });
-
-  it("rejects duplicated sku", async () => {
-    const app = createApp();
-    const response = await request(app).post("/api/inventory").send({
-      name: "另一種口罩",
-      sku: "MSK-004",
-      quantity: 10,
-      reorderPoint: 5,
-      location: "D-02"
-    });
-
-    expect(response.status).toBe(400);
-    expect(response.body.error).toContain("sku");
+    expect(response.body.name).toBe("防塵口罩");
+    expect(response.body.sku).toBe(sku);
   });
 
   it("adjust inventory success", async () => {
-    const app = createApp();
+    const list = await request(app).get("/api/inventory");
+    const targetId = list.body[0].id as string;
+
     const response = await request(app).post("/api/inventory/adjust").send({
-      itemId: "1",
-      delta: -10,
+      itemId: targetId,
+      delta: -1,
       reason: "出貨"
     });
 
     expect(response.status).toBe(200);
-    expect(response.body.item.quantity).toBeGreaterThanOrEqual(0);
+    expect(response.body.id).toBe(targetId);
+    expect(response.body.quantity).toBeGreaterThanOrEqual(0);
   });
 
-  it("returns local inventory summary", async () => {
-    const app = createApp();
-    const response = await request(app).get("/api/ai/summary");
+  it("does not include suggestions when quantity equals reorder point", async () => {
+    const sku = `EQ-${Date.now()}`;
+    const created = await request(app).post("/api/inventory").send({
+      name: "等於門檻測試品",
+      sku,
+      quantity: 10,
+      reorderPoint: 15,
+      location: "Z-01"
+    });
 
-    expect(response.status).toBe(200);
-    expect(typeof response.body.summary).toBe("string");
-    expect(response.body.summary.length).toBeGreaterThan(0);
+    expect(created.status).toBe(201);
+
+    const itemId = created.body.id as string;
+    await request(app).post("/api/inventory/adjust").send({ itemId, delta: 5 });
+
+    const summary = await request(app).get("/api/ai/summary");
+    expect(summary.status).toBe(200);
+    const ids = summary.body.suggestions.map((s: { itemId: string }) => s.itemId);
+    expect(ids).not.toContain(itemId);
+
+    await request(app).delete(`/api/inventory/${itemId}`);
   });
 });

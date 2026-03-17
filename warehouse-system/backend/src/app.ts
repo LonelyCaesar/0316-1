@@ -1,12 +1,10 @@
 import express from "express";
 import cors from "cors";
-import { adjustInventory, listItems, lowStockItems } from "./inventoryStore.js";
-import { requestOllamaSummary } from "./ollamaClient.js";
+import { addItem, adjustInventory, listItems, lowStockItems } from "./inventoryStore.js";
+import { generateInventorySummary } from "./inventoryAdvisor.js";
 
 export const createApp = () => {
   const app = express();
-  const ollamaBaseUrl = process.env.OLLAMA_BASE_URL || "http://localhost:11434";
-  const ollamaModel = process.env.OLLAMA_MODEL || "llama3.1";
 
   app.use(cors());
   app.use(express.json());
@@ -17,6 +15,16 @@ export const createApp = () => {
 
   app.get("/api/inventory", (_req, res) => {
     res.json({ items: listItems() });
+  });
+
+  app.post("/api/inventory", (req, res) => {
+    try {
+      const item = addItem(req.body);
+      res.status(201).json({ item });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "新增商品失敗";
+      res.status(400).json({ error: message });
+    }
   });
 
   app.post("/api/inventory/adjust", (req, res) => {
@@ -33,22 +41,12 @@ export const createApp = () => {
     res.json({ items: lowStockItems() });
   });
 
-  app.get("/api/ai/summary", async (_req, res) => {
+  app.get("/api/ai/summary", (_req, res) => {
     const items = listItems();
     const low = lowStockItems();
-    const prompt = [
-      `目前品項總數: ${items.length}`,
-      `低於安全庫存品項: ${low.map((x) => `${x.name}(${x.quantity}/${x.reorderPoint})`).join(", ") || "無"}`,
-      "請提供三點補貨與倉儲作業優化建議。"
-    ].join("\n");
+    const summary = generateInventorySummary(items, low);
 
-    try {
-      const summary = await requestOllamaSummary(ollamaBaseUrl, ollamaModel, prompt);
-      res.json({ summary });
-    } catch (error) {
-      const message = error instanceof Error ? error.message : "Ollama 連線失敗";
-      res.status(502).json({ error: message });
-    }
+    res.json({ summary });
   });
 
   return app;

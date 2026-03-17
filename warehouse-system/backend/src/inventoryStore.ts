@@ -1,4 +1,4 @@
-import { InventoryAdjustment, InventoryItem } from "./types.js";
+import { InventoryAdjustment, InventoryItem, NewInventoryItem } from "./types.js";
 
 const now = () => new Date().toISOString();
 
@@ -33,6 +33,35 @@ const inventory: InventoryItem[] = [
 ];
 
 export const listItems = (): InventoryItem[] => inventory;
+
+export const addItem = (payload: NewInventoryItem): InventoryItem => {
+  if (!payload.name?.trim() || !payload.sku?.trim() || !payload.location?.trim()) {
+    throw new Error("name、sku、location 不可為空");
+  }
+
+  if (payload.quantity < 0 || payload.reorderPoint < 0) {
+    throw new Error("quantity 與 reorderPoint 不可小於 0");
+  }
+
+  const skuExists = inventory.some((item) => item.sku.toLowerCase() === payload.sku.toLowerCase());
+  if (skuExists) {
+    throw new Error("sku 已存在");
+  }
+
+  const nextId = String(Math.max(0, ...inventory.map((item) => Number(item.id) || 0)) + 1);
+  const item: InventoryItem = {
+    id: nextId,
+    name: payload.name.trim(),
+    sku: payload.sku.trim(),
+    quantity: payload.quantity,
+    reorderPoint: payload.reorderPoint,
+    location: payload.location.trim(),
+    updatedAt: now()
+  };
+
+  inventory.push(item);
+  return item;
+};
 
 export const adjustInventory = (payload: InventoryAdjustment): InventoryItem => {
   const target = inventory.find((item) => item.id === payload.itemId);

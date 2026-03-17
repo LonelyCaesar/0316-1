@@ -14,7 +14,10 @@ export interface InventoryAdjustment {
   reason: string;
 }
 
-export interface OllamaMessage {
-  role: "system" | "user" | "assistant";
-  content: string;
+export interface NewInventoryItem {
+  name: string;
+  sku: string;
+  quantity: number;
+  reorderPoint: number;
+  location: string;
 }

@@ -1,5 +1,6 @@
 import express from "express";
 import cors from "cors";
+import { addItem, adjustInventory, listItems, lowStockItems } from "./inventoryStore.js";
 import { adjustInventory, listItems, lowStockItems } from "./inventoryStore.js";
 import { generateInventorySummary } from "./inventoryAdvisor.js";
 
@@ -15,6 +16,16 @@ export const createApp = () => {
 
   app.get("/api/inventory", (_req, res) => {
     res.json({ items: listItems() });
+  });
+
+  app.post("/api/inventory", (req, res) => {
+    try {
+      const item = addItem(req.body);
+      res.status(201).json({ item });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "新增商品失敗";
+      res.status(400).json({ error: message });
+    }
   });
 
   app.post("/api/inventory/adjust", (req, res) => {

@@ -13,7 +13,6 @@ export interface InventoryAdjustment {
   delta: number;
   reason: string;
 }
-
 export interface NewInventoryItem {
   name: string;
   sku: string;

@@ -9,7 +9,24 @@ interface Item {
   updatedAt: string;
 }
 
-defineProps<{ items: Item[] }>();
+defineProps<{
+  items: Item[];
+  busy?: boolean;
+}>();
+
+const emit = defineEmits<{
+  sell: [item: Item, amount: number];
+  restock: [item: Item, amount: number];
+}>();
+
+const onSellOne = (item: Item) => {
+  emit("sell", item, 1);
+};
+
+const onRestock = (item: Item) => {
+  const amount = Math.max(item.reorderPoint - item.quantity, 1);
+  emit("restock", item, amount);
+};
 </script>
 
 <template>
@@ -22,6 +39,7 @@ defineProps<{ items: Item[] }>();
         <th>安全庫存</th>
         <th>儲位</th>
         <th>更新時間</th>
+        <th>操作</th>
       </tr>
     </thead>
     <tbody>
@@ -32,6 +50,10 @@ defineProps<{ items: Item[] }>();
         <td>{{ item.reorderPoint }}</td>
         <td>{{ item.location }}</td>
         <td>{{ new Date(item.updatedAt).toLocaleString() }}</td>
+        <td class="actions">
+          <button :disabled="busy || item.quantity <= 0" @click="onSellOne(item)">賣出 1</button>
+          <button :disabled="busy || item.quantity > item.reorderPoint" @click="onRestock(item)">補到安全庫存</button>
+        </td>
       </tr>
     </tbody>
   </table>
@@ -50,5 +72,12 @@ td {
 }
 .low {
   background: #ffe5e5;
+}
+.actions {
+  display: flex;
+  gap: 6px;
+}
+button {
+  padding: 4px 8px;
 }
 </style>

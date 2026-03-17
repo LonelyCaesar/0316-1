@@ -47,6 +47,11 @@ npm run dev
 - `http://localhost:3004/api/health`
 
 ---
+啟動成功後可測試：
+
+- `http://localhost:3004/api/health`
+
+---
 - `PORT`（預設 `3004`）
 - `HOST`（預設 `0.0.0.0`）
 
@@ -62,6 +67,7 @@ npm run dev
 ```
 
 ### Windows CMD
+
 ```cmd
 cd <你的專案路徑>\warehouse-system\frontend
 npm install
@@ -72,6 +78,60 @@ set VITE_API_BASE=http://localhost:3004&& npm run dev
 cd <你的專案路徑>\warehouse-system\frontend
 npm install
 set VITE_API_BASE=http://localhost:3004&& npm run dev
+```
+
+### macOS / Linux（bash、zsh）
+
+```bash
+cd <你的專案路徑>/warehouse-system/frontend
+npm install
+VITE_API_BASE=http://localhost:3004 npm run dev
+```
+
+啟動後打開：
+
+- `http://localhost:5004`
+
+---
+
+## 網頁操作：新增商品、賣出自動扣庫存、低庫存補貨
+
+1. 開啟 `http://localhost:5004`。
+2. 在「新增商品」區塊填入 `品項名稱 / SKU / 初始庫存 / 安全庫存 / 儲位`，按「新增商品」。
+3. 在庫存表每列可按「賣出 1」，系統會自動扣減該品項庫存。
+4. 若品項低於安全庫存，可按該列「補到安全庫存」。
+5. 也可在「補貨建議」區按「一鍵補齊低庫存」，自動補齊所有低庫存品項。
+
+> 表格紅底代表低庫存（`庫存量 <= 安全庫存`）。
+
+---
+
+## 進出貨與新增商品（重點）
+
+### A. 賣出商品（扣庫存）
+
+使用 `POST /api/inventory/adjust`，`delta` 填負數：
+
+```bash
+curl -X POST http://localhost:3004/api/inventory/adjust \
+  -H "Content-Type: application/json" \
+  -d '{"itemId":"1","delta":-5,"reason":"出貨"}'
+```
+
+### B. 新增一個新商品（新 SKU）
+
+使用 `POST /api/inventory`：
+
+```bash
+curl -X POST http://localhost:3004/api/inventory \
+  -H "Content-Type: application/json" \
+  -d '{"name":"防塵口罩","sku":"MSK-004","quantity":30,"reorderPoint":20,"location":"D-01"}'
+```
+
+Windows PowerShell 範例：
+
+```powershell
+Invoke-RestMethod -Method Post -Uri "http://localhost:3004/api/inventory" -ContentType "application/json" -Body '{"name":"防塵口罩","sku":"MSK-004","quantity":30,"reorderPoint":20,"location":"D-01"}'
 ```
 
 啟動後打開：

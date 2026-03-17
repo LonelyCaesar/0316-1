@@ -12,14 +12,33 @@ interface Item {
   updatedAt: string;
 }
 
+interface NewItemForm {
+  name: string;
+  sku: string;
+  quantity: number;
+  reorderPoint: number;
+  location: string;
+}
+
 const apiBase = import.meta.env.VITE_API_BASE || "http://localhost:3004";
 const items = ref<Item[]>([]);
 const aiSummary = ref("尚未載入");
 const loading = ref(false);
+const saving = ref(false);
 const errorMessage = ref("");
+const successMessage = ref("");
 const backendHealthy = ref<boolean | null>(null);
 
+const form = ref<NewItemForm>({
+  name: "",
+  sku: "",
+  quantity: 0,
+  reorderPoint: 0,
+  location: ""
+});
+
 const hasItems = computed(() => items.value.length > 0);
+const lowStockItems = computed(() => items.value.filter((item) => item.quantity <= item.reorderPoint));
 
 const loadDashboard = async () => {
   loading.value = true;
@@ -56,13 +75,85 @@ const loadDashboard = async () => {
   }
 };
 
+const resetForm = () => {
+  form.value = { name: "", sku: "", quantity: 0, reorderPoint: 0, location: "" };
+};
+
+const createItem = async () => {
+  saving.value = true;
+  errorMessage.value = "";
+  successMessage.value = "";
+
+  try {
+    const response = await fetch(`${apiBase}/api/inventory`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(form.value)
+    });
+
+    if (!response.ok) {
+      const data = (await response.json().catch(() => ({}))) as { error?: string };
+      throw new Error(data.error || `新增商品失敗（HTTP ${response.status}）`);
+    }
+
+    successMessage.value = "新增商品成功";
+    resetForm();
+    await loadDashboard();
+  } catch (error) {
+    errorMessage.value = error instanceof Error ? error.message : "新增商品失敗";
+  } finally {
+    saving.value = false;
+  }
+};
+
+const changeStock = async (item: Item, delta: number, reason: string) => {
+  saving.value = true;
+  errorMessage.value = "";
+  successMessage.value = "";
+
+  try {
+    const response = await fetch(`${apiBase}/api/inventory/adjust`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ itemId: item.id, delta, reason })
+    });
+
+    if (!response.ok) {
+      const data = (await response.json().catch(() => ({}))) as { error?: string };
+      throw new Error(data.error || `庫存更新失敗（HTTP ${response.status}）`);
+    }
+
+    successMessage.value = `${item.name} 已更新庫存`;
+    await loadDashboard();
+  } catch (error) {
+    errorMessage.value = error instanceof Error ? error.message : "庫存更新失敗";
+  } finally {
+    saving.value = false;
+  }
+};
+
+const handleSell = async (item: Item, amount: number) => {
+  await changeStock(item, -Math.abs(amount), "出貨");
+};
+
+const handleRestock = async (item: Item, amount: number) => {
+  await changeStock(item, Math.abs(amount), "補貨");
+};
+
+const restockAllLowStock = async () => {
+  for (const item of lowStockItems.value) {
+    const amount = Math.max(item.reorderPoint - item.quantity, 1);
+    await changeStock(item, amount, "低庫存補貨");
+  }
+};
+
 onMounted(loadDashboard);
 </script>
 
 <template>
   <main>
     <h1>智慧倉儲管理系統</h1>
-    <button @click="loadDashboard">重新整理</button>
+    <button :disabled="loading || saving" @click="loadDashboard">重新整理</button>
     <p class="status" :class="{ ok: backendHealthy, bad: backendHealthy === false }">
       後端狀態：
       <span v-if="backendHealthy === null">檢查中</span>
@@ -72,13 +163,29 @@ onMounted(loadDashboard);
 
     <p v-if="loading">載入中...</p>
     <p v-if="errorMessage" class="error">{{ errorMessage }}</p>
+    <p v-if="successMessage" class="ok">{{ successMessage }}</p>
     <p v-if="!loading && !hasItems" class="hint">尚未取得庫存資料。</p>
 
-    <InventoryTable :items="items" />
+    <section class="ops-box">
+      <h2>新增商品</h2>
+      <div class="form-grid">
+        <input v-model="form.name" placeholder="品項名稱" />
+        <input v-model="form.sku" placeholder="SKU" />
+        <input v-model.number="form.quantity" type="number" min="0" placeholder="初始庫存" />
+        <input v-model.number="form.reorderPoint" type="number" min="0" placeholder="安全庫存" />
+        <input v-model="form.location" placeholder="儲位" />
+        <button :disabled="saving" @click="createItem">新增商品</button>
+      </div>
+    </section>
+
+    <InventoryTable :items="items" :busy="saving" @sell="handleSell" @restock="handleRestock" />
 
     <section class="ai-box">
       <h2>補貨建議</h2>
       <p>{{ aiSummary }}</p>
+      <button :disabled="saving || lowStockItems.length === 0" @click="restockAllLowStock">
+        一鍵補齊低庫存（{{ lowStockItems.length }} 項）
+      </button>
     </section>
 
     <section class="ops-box">
@@ -120,10 +227,22 @@ button {
 .hint {
   color: #555;
 }
+.ops-box,
+
 .ai-box {
   margin-top: 20px;
   padding: 12px;
   background: #eef6ff;
   border-radius: 8px;
 }
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+.form-grid input {
+  padding: 8px;
+}
+
 </style>

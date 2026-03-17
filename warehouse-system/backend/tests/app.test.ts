@@ -27,6 +27,32 @@ describe("warehouse api", () => {
     expect(response.body.item.sku).toBe("MSK-004");
   });
 
+  it("updates inventory item", async () => {
+    const app = createApp();
+    const response = await request(app).put("/api/inventory/1").send({
+      name: "工業手套（新版）",
+      sku: "GLO-001",
+      quantity: 110,
+      reorderPoint: 70,
+      location: "A-02"
+    });
+
+    expect(response.status).toBe(200);
+    expect(response.body.item.name).toBe("工業手套（新版）");
+    expect(response.body.item.location).toBe("A-02");
+  });
+
+  it("deletes inventory item", async () => {
+    const app = createApp();
+    const response = await request(app).delete("/api/inventory/3");
+
+    expect(response.status).toBe(200);
+    expect(response.body.item.id).toBe("3");
+
+    const listResponse = await request(app).get("/api/inventory");
+    expect(listResponse.body.items.some((item: { id: string }) => item.id === "3")).toBe(false);
+  });
+
   it("rejects duplicated sku", async () => {
     const app = createApp();
     const response = await request(app).post("/api/inventory").send({

@@ -1,4 +1,9 @@
-import { InventoryAdjustment, InventoryItem, NewInventoryItem } from "./types.js";
+import {
+  InventoryAdjustment,
+  InventoryItem,
+  NewInventoryItem,
+  UpdateInventoryItem
+} from "./types.js";
 
 const now = () => new Date().toISOString();
 
@@ -32,9 +37,7 @@ const inventory: InventoryItem[] = [
   }
 ];
 
-export const listItems = (): InventoryItem[] => inventory;
-
-export const addItem = (payload: NewInventoryItem): InventoryItem => {
+const validateItemPayload = (payload: NewInventoryItem | UpdateInventoryItem) => {
   if (!payload.name?.trim() || !payload.sku?.trim() || !payload.location?.trim()) {
     throw new Error("name、sku、location 不可為空");
   }
@@ -42,6 +45,12 @@ export const addItem = (payload: NewInventoryItem): InventoryItem => {
   if (payload.quantity < 0 || payload.reorderPoint < 0) {
     throw new Error("quantity 與 reorderPoint 不可小於 0");
   }
+};
+
+export const listItems = (): InventoryItem[] => inventory;
+
+export const addItem = (payload: NewInventoryItem): InventoryItem => {
+  validateItemPayload(payload);
 
   const skuExists = inventory.some((item) => item.sku.toLowerCase() === payload.sku.toLowerCase());
   if (skuExists) {
@@ -61,6 +70,41 @@ export const addItem = (payload: NewInventoryItem): InventoryItem => {
 
   inventory.push(item);
   return item;
+};
+
+export const updateItem = (id: string, payload: UpdateInventoryItem): InventoryItem => {
+  validateItemPayload(payload);
+
+  const target = inventory.find((item) => item.id === id);
+  if (!target) {
+    throw new Error("Item not found");
+  }
+
+  const skuExists = inventory.some(
+    (item) => item.id !== id && item.sku.toLowerCase() === payload.sku.toLowerCase()
+  );
+  if (skuExists) {
+    throw new Error("sku 已存在");
+  }
+
+  target.name = payload.name.trim();
+  target.sku = payload.sku.trim();
+  target.quantity = payload.quantity;
+  target.reorderPoint = payload.reorderPoint;
+  target.location = payload.location.trim();
+  target.updatedAt = now();
+
+  return target;
+};
+
+export const deleteItem = (id: string): InventoryItem => {
+  const index = inventory.findIndex((item) => item.id === id);
+  if (index === -1) {
+    throw new Error("Item not found");
+  }
+
+  const [removed] = inventory.splice(index, 1);
+  return removed;
 };
 
 export const adjustInventory = (payload: InventoryAdjustment): InventoryItem => {

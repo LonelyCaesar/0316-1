@@ -1,7 +1,13 @@
 import express from "express";
 import cors from "cors";
-import { addItem, adjustInventory, listItems, lowStockItems } from "./inventoryStore.js";
-import { adjustInventory, listItems, lowStockItems } from "./inventoryStore.js";
+import {
+  addItem,
+  adjustInventory,
+  deleteItem,
+  listItems,
+  lowStockItems,
+  updateItem
+} from "./inventoryStore.js";
 import { generateInventorySummary } from "./inventoryAdvisor.js";
 
 export const createApp = () => {
@@ -24,6 +30,26 @@ export const createApp = () => {
       res.status(201).json({ item });
     } catch (error) {
       const message = error instanceof Error ? error.message : "新增商品失敗";
+      res.status(400).json({ error: message });
+    }
+  });
+
+  app.put("/api/inventory/:id", (req, res) => {
+    try {
+      const item = updateItem(req.params.id, req.body);
+      res.json({ item });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "修改商品失敗";
+      res.status(400).json({ error: message });
+    }
+  });
+
+  app.delete("/api/inventory/:id", (req, res) => {
+    try {
+      const item = deleteItem(req.params.id);
+      res.json({ item });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "刪除商品失敗";
       res.status(400).json({ error: message });
     }
   });

@@ -53,6 +53,17 @@ async function restock(item: Item) {
   await refresh();
 }
 
+
+async function removeItem(item: Item) {
+  if (!window.confirm(`確定要刪除「${item.name}」嗎？`)) {
+    return;
+  }
+  await fetch(`${apiBase}/api/inventory/${item.id}`, {
+    method: 'DELETE'
+  });
+  await refresh();
+}
+
 async function addItem() {
   await fetch(`${apiBase}/api/inventory`, {
     method: 'POST',
@@ -99,6 +110,7 @@ onMounted(refresh);
             <td>
               <button @click="sellOne(item.id)">賣出 1</button>
               <button @click="restock(item)">補到安全庫存</button>
+              <button @click="removeItem(item)">刪除</button>
             </td>
           </tr>
         </tbody>

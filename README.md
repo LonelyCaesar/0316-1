@@ -39,10 +39,19 @@ npm run dev
 ```bash
 cd warehouse-system/frontend
 npm install
-VITE_API_BASE=http://localhost:3004 npm run dev
+npm run dev
 ```
 
 開啟：`http://localhost:5004`
+
+> 前端已在 `warehouse-system/frontend/.env.development` 預設設定 `VITE_API_BASE=http://localhost:3004`。
+>
+> 若要在 **PowerShell** 臨時覆蓋，請使用：
+>
+> ```powershell
+> $env:VITE_API_BASE="http://localhost:3004"
+> npm run dev
+> ```
 
 ## 主要 API
 
@@ -50,6 +59,7 @@ VITE_API_BASE=http://localhost:3004 npm run dev
 - `GET /api/inventory`
 - `POST /api/inventory`
 - `POST /api/inventory/adjust`
+- `DELETE /api/inventory/:id`
 - `GET /api/inventory/low-stock`
 - `GET /api/ai/summary`
 

@@ -1,6 +1,6 @@
 import cors from 'cors';
 import express from 'express';
-import { adjustInventory, buildSummary, createItem, getInventory, getLowStock } from './store.js';
+import { adjustInventory, buildSummary, createItem, deleteItem, getInventory, getLowStock } from './store.js';
 
 export const app = express();
 
@@ -29,6 +29,15 @@ app.post('/api/inventory', (req, res) => {
     location
   });
   res.status(201).json(item);
+});
+
+
+app.delete('/api/inventory/:id', (req, res) => {
+  const item = deleteItem(req.params.id);
+  if (!item) {
+    return res.status(404).json({ message: 'item not found' });
+  }
+  res.json(item);
 });
 
 app.post('/api/inventory/adjust', (req, res) => {

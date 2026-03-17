@@ -1,13 +1,14 @@
-# Warehouse System Demo (Python + Vue 3 + TypeScript + Node.js + Ollama)
+# Warehouse System Demo (Python + Vue 3 + TypeScript + Node.js)
 
 這個 repo 提供一個可快速啟動的「智慧倉儲系統」範例，包含：
 
-- **Node.js + TypeScript 後端 API**（庫存查詢、調整、低庫存、AI 建議）
-- **Vue 3 + TypeScript 前端儀表板**（庫存列表與 Ollama 建議）
+- **Node.js + TypeScript 後端 API**（庫存查詢、調整、低庫存、補貨建議）
+- **Vue 3 + TypeScript 前端儀表板**（庫存列表與補貨建議）
 - **Python 補貨計算模組**（EOQ 與 Reorder Point）
-- **Ollama 整合**（透過 `/api/ai/summary` 取得文字建議）
 
 預設網址：前端 `http://localhost:5004`、後端 `http://localhost:3004`。
+
+---
 
 ## 專案結構
 
@@ -18,17 +19,77 @@ warehouse-system/
   python/    # 補貨決策 Python 函式
 ```
 
-## 1) 啟動後端
+---
 
-```bash
-cd warehouse-system/backend
+## 先看這段：要開幾個終端機？
+
+請開 **2 個終端機視窗（或 2 個分頁）**：
+
+- **終端機 A（後端專用）**：啟動 API（port 3004）
+- **終端機 B（前端專用）**：啟動前端頁面（port 5004）
+
+> `npm test` 只會跑測試，不會啟動後端服務。
+
+---
+
+## 1) 終端機 A：啟動後端 API
+
+### Windows PowerShell / CMD
+
+```powershell
+cd <你的專案路徑>\warehouse-system\backend
 npm install
 npm run dev
 ```
 
-預設 `http://localhost:3004`。
+### macOS / Linux（Terminal）
 
-### 主要 API
+```bash
+cd <你的專案路徑>/warehouse-system/backend
+npm install
+npm run dev
+```
+
+啟動成功後可測試：
+
+- `http://localhost:3004/api/health`
+
+---
+
+## 2) 終端機 B：啟動前端
+
+### Windows PowerShell
+
+```powershell
+cd <你的專案路徑>\warehouse-system\frontend
+npm install
+$env:VITE_API_BASE="http://localhost:3004"
+npm run dev
+```
+
+### Windows CMD
+
+```cmd
+cd <你的專案路徑>\warehouse-system\frontend
+npm install
+set VITE_API_BASE=http://localhost:3004&& npm run dev
+```
+
+### macOS / Linux（bash、zsh）
+
+```bash
+cd <你的專案路徑>/warehouse-system/frontend
+npm install
+VITE_API_BASE=http://localhost:3004 npm run dev
+```
+
+啟動後打開：
+
+- `http://localhost:5004`
+
+---
+
+## 主要 API
 
 - `GET /api/health`
 - `GET /api/inventory`
@@ -36,40 +97,32 @@ npm run dev
 - `GET /api/inventory/low-stock`
 - `GET /api/ai/summary`
 
-可用環境變數覆蓋：
+可用環境變數覆蓋（後端）：
 
 - `PORT`（預設 `3004`）
 - `HOST`（預設 `0.0.0.0`）
-- `OLLAMA_BASE_URL`（預設 `http://localhost:11434`）
-- `OLLAMA_MODEL`（預設 `llama3.1`）
 
-## 2) 啟動前端
-
-```bash
-cd warehouse-system/frontend
-npm install
-npm run dev
-```
-
-預設 `http://localhost:5004`。
-
-可指定 API Base：
-
-```bash
-VITE_API_BASE=http://localhost:3004 npm run dev
-```
+---
 
 ## 常見排查
 
-若頁面顯示「載入中...」或「尚未取得庫存資料」：
+1. **前端顯示無資料 / Failed to fetch**
+   - 先檢查終端機 A 是否還在跑 `npm run dev`。
+   - 確認 `http://localhost:3004/api/health` 打得開。
 
-1. 確認後端已啟動且可開啟 `http://localhost:3004/api/health`。
-2. 確認前端啟動網址為 `http://localhost:5004`。
-3. 若要顯示 AI 建議，另開一個終端啟動 Ollama：
+2. **Windows 出現 `ENOENT ... package.json`**
+   - 代表你在錯誤目錄（常見：`C:\WINDOWS\System32`）執行 npm。
+   - 請先 `cd` 到正確資料夾：
+     - 後端：`...\warehouse-system\backend`
+     - 前端：`...\warehouse-system\frontend`
 
-```bash
-ollama serve
-```
+3. **PowerShell 顯示 `'VITE_API_BASE=...' is not recognized`**
+   - 你用了 bash 語法。
+   - PowerShell 請改用：
+     - `$env:VITE_API_BASE="http://localhost:3004"`
+     - 然後再 `npm run dev`
+
+---
 
 ## 3) Python 補貨邏輯
 
@@ -77,7 +130,9 @@ ollama serve
 python3 warehouse-system/python/reorder_advisor.py
 ```
 
-## 4) 測試
+---
+
+## 4) 測試（只跑測試，不會啟動服務）
 
 ```bash
 cd warehouse-system/backend

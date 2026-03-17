@@ -21,4 +21,11 @@ export interface NewInventoryItem {
   reorderPoint: number;
   location: string;
 }
+
+export interface UpdateInventoryItem {
+  name: string;
+  sku: string;
+  quantity: number;
+  reorderPoint: number;
+  location: string;
 }

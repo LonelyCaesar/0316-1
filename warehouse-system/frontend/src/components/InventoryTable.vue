@@ -17,6 +17,8 @@ defineProps<{
 const emit = defineEmits<{
   sell: [item: Item, amount: number];
   restock: [item: Item, amount: number];
+  edit: [item: Item];
+  delete: [item: Item];
 }>();
 
 const onSellOne = (item: Item) => {
@@ -53,6 +55,8 @@ const onRestock = (item: Item) => {
         <td class="actions">
           <button :disabled="busy || item.quantity <= 0" @click="onSellOne(item)">賣出 1</button>
           <button :disabled="busy || item.quantity > item.reorderPoint" @click="onRestock(item)">補到安全庫存</button>
+          <button :disabled="busy" @click="emit('edit', item)">修改</button>
+          <button :disabled="busy" @click="emit('delete', item)">刪除</button>
         </td>
       </tr>
     </tbody>
@@ -75,6 +79,7 @@ td {
 }
 .actions {
   display: flex;
+  flex-wrap: wrap;
   gap: 6px;
 }
 button {

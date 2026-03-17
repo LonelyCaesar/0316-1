@@ -106,6 +106,84 @@ const createItem = async () => {
   }
 };
 
+const updateItem = async (item: Item) => {
+  const name = window.prompt("品項名稱", item.name);
+  if (name === null) return;
+  const sku = window.prompt("SKU", item.sku);
+  if (sku === null) return;
+  const quantityRaw = window.prompt("庫存量", String(item.quantity));
+  if (quantityRaw === null) return;
+  const reorderPointRaw = window.prompt("安全庫存", String(item.reorderPoint));
+  if (reorderPointRaw === null) return;
+  const location = window.prompt("儲位", item.location);
+  if (location === null) return;
+
+  const quantity = Number(quantityRaw);
+  const reorderPoint = Number(reorderPointRaw);
+
+  if (!Number.isFinite(quantity) || !Number.isFinite(reorderPoint)) {
+    errorMessage.value = "庫存量與安全庫存需為數字";
+    return;
+  }
+
+  saving.value = true;
+  errorMessage.value = "";
+  successMessage.value = "";
+
+  try {
+    const response = await fetch(`${apiBase}/api/inventory/${item.id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name,
+        sku,
+        quantity,
+        reorderPoint,
+        location
+      })
+    });
+
+    if (!response.ok) {
+      const data = (await response.json().catch(() => ({}))) as { error?: string };
+      throw new Error(data.error || `修改商品失敗（HTTP ${response.status}）`);
+    }
+
+    successMessage.value = `${item.name} 已修改`;
+    await loadDashboard();
+  } catch (error) {
+    errorMessage.value = error instanceof Error ? error.message : "修改商品失敗";
+  } finally {
+    saving.value = false;
+  }
+};
+
+const removeItem = async (item: Item) => {
+  const confirmed = window.confirm(`確定刪除 ${item.name}（${item.sku}）？`);
+  if (!confirmed) return;
+
+  saving.value = true;
+  errorMessage.value = "";
+  successMessage.value = "";
+
+  try {
+    const response = await fetch(`${apiBase}/api/inventory/${item.id}`, {
+      method: "DELETE"
+    });
+
+    if (!response.ok) {
+      const data = (await response.json().catch(() => ({}))) as { error?: string };
+      throw new Error(data.error || `刪除商品失敗（HTTP ${response.status}）`);
+    }
+
+    successMessage.value = `${item.name} 已刪除`;
+    await loadDashboard();
+  } catch (error) {
+    errorMessage.value = error instanceof Error ? error.message : "刪除商品失敗";
+  } finally {
+    saving.value = false;
+  }
+};
+
 const changeStock = async (item: Item, delta: number, reason: string) => {
   saving.value = true;
   errorMessage.value = "";
@@ -178,7 +256,14 @@ onMounted(loadDashboard);
       </div>
     </section>
 
-    <InventoryTable :items="items" :busy="saving" @sell="handleSell" @restock="handleRestock" />
+    <InventoryTable
+      :items="items"
+      :busy="saving"
+      @sell="handleSell"
+      @restock="handleRestock"
+      @edit="updateItem"
+      @delete="removeItem"
+    />
 
     <section class="ai-box">
       <h2>補貨建議</h2>
@@ -186,15 +271,6 @@ onMounted(loadDashboard);
       <button :disabled="saving || lowStockItems.length === 0" @click="restockAllLowStock">
         一鍵補齊低庫存（{{ lowStockItems.length }} 項）
       </button>
-    </section>
-
-    <section class="ops-box">
-      <h2>快速操作</h2>
-      <ol>
-        <li>先啟動後端 API：`cd warehouse-system/backend && npm run dev`（預設 3004）。</li>
-        <li>再啟動前端：`cd warehouse-system/frontend && npm run dev`（預設 5004）。</li>
-        <li>若畫面無資料，按「重新整理」，並確認 `VITE_API_BASE` 指向後端。</li>
-      </ol>
     </section>
   </main>
 </template>
@@ -228,7 +304,6 @@ button {
   color: #555;
 }
 .ops-box,
-
 .ai-box {
   margin-top: 20px;
   padding: 12px;
@@ -244,5 +319,4 @@ button {
 .form-grid input {
   padding: 8px;
 }
-
 </style>

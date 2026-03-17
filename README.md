@@ -80,14 +80,6 @@ npm install
 set VITE_API_BASE=http://localhost:3004&& npm run dev
 ```
 
-### macOS / Linux（bash、zsh）
-
-```bash
-cd <你的專案路徑>/warehouse-system/frontend
-npm install
-VITE_API_BASE=http://localhost:3004 npm run dev
-```
-
 啟動後打開：
 
 - `http://localhost:5004`

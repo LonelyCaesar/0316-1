@@ -1,11 +1,10 @@
-# Warehouse System Demo (Python + Vue 3 + TypeScript + Node.js + Ollama)
+# Warehouse System Demo (Python + Vue 3 + TypeScript + Node.js)
 
 這個 repo 提供一個可快速啟動的「智慧倉儲系統」範例，包含：
 
-- **Node.js + TypeScript 後端 API**（庫存查詢、調整、低庫存、AI 建議）
-- **Vue 3 + TypeScript 前端儀表板**（庫存列表與 Ollama 建議）
+- **Node.js + TypeScript 後端 API**（庫存查詢、調整、低庫存、補貨建議）
+- **Vue 3 + TypeScript 前端儀表板**（庫存列表與補貨建議）
 - **Python 補貨計算模組**（EOQ 與 Reorder Point）
-- **Ollama 整合**（透過 `/api/ai/summary` 取得文字建議）
 
 預設網址：前端 `http://localhost:5004`、後端 `http://localhost:3004`。
 
@@ -40,8 +39,6 @@ npm run dev
 
 - `PORT`（預設 `3004`）
 - `HOST`（預設 `0.0.0.0`）
-- `OLLAMA_BASE_URL`（預設 `http://localhost:11434`）
-- `OLLAMA_MODEL`（預設 `llama3.1`）
 
 ## 2) 啟動前端
 
@@ -65,11 +62,6 @@ VITE_API_BASE=http://localhost:3004 npm run dev
 
 1. 確認後端已啟動且可開啟 `http://localhost:3004/api/health`。
 2. 確認前端啟動網址為 `http://localhost:5004`。
-3. 若要顯示 AI 建議，另開一個終端啟動 Ollama：
-
-```bash
-ollama serve
-```
 
 ## 3) Python 補貨邏輯
 

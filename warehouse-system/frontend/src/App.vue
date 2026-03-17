@@ -72,7 +72,7 @@ onMounted(loadDashboard);
 
     <p v-if="loading">載入中...</p>
     <p v-if="errorMessage" class="error">{{ errorMessage }}</p>
-    <p v-if="!loading && !hasItems" class="hint">尚未取得庫存資料，請依下方操作步驟啟動後端。</p>
+    <p v-if="!loading && !hasItems" class="hint">尚未取得庫存資料。</p>
 
     <InventoryTable :items="items" />
 
@@ -120,14 +120,10 @@ button {
 .hint {
   color: #555;
 }
-.ai-box,
-.ops-box {
+.ai-box {
   margin-top: 20px;
   padding: 12px;
   background: #eef6ff;
   border-radius: 8px;
-}
-.ops-box ol {
-  margin: 8px 0 0 18px;
 }
 </style>
